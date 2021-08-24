@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+  adstxt:
+    container_name: adstxt
+    image: python
+    ports:
+      - 9000:9000
+    entrypoint: /opt/entrypoint.sh
+    tty: true
+    working_dir: /opt
+    restart: always
+    volumes:
+      - ./src:/opt
+
+  postgree:
+    container_name: ads-postgree
+    image: postgres
+    build:
+      context: .
+      dockerfile: ./Dockerfile.db
+    restart: always
+    volumes:
+      - ads-postgree:/var/lib/postgresql/data 
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: adstxt
+
+volumes:
+  ads-postgree:

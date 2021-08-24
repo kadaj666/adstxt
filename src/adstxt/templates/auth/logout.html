@@ -1,0 +1,39 @@
+{% extends "base2.html" %}
+{% load static %}
+{% block content %}
+<div id="wrapper">
+    <div class="vertical-align-wrap">
+        <div class="vertical-align-middle">
+            <div class="auth-box lockscreen clearfix">
+                <div class="content">
+                   
+                    <div class="logo text-center">
+                        <div class="logo-text-dark">
+                            <span class="thick">ADS.</span><span class="thin">TXT</span>
+                          </div>
+                    </div>
+                    
+                        <div id="progress-share" class="progress-semicircle">
+                         
+                            <span class="content">
+                                <i class="far fa-check-circle icon"></i>
+                                <br><br>
+                                <h4 class="heading">You have successefull loged out!</h4>
+                            </span>
+                        </div>
+                        <br>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <a href="{% url 'login' %}">
+                            <button type="button" class="btn btn-info btn-outline btn-block"><i class="fas fa-sign-in-alt"></i>
+                                <span>Login again</span>
+                            </button>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

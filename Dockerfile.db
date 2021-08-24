@@ -1,0 +1,3 @@
+FROM postgres
+
+ADD ./webg.sql /docker-entrypoint-initdb.d

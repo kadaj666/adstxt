@@ -1,0 +1,563 @@
+{% extends "base.html" %} {% load static %} {% block content %}
+
+<div class="main-content">
+    <div class="content-heading clearfix">
+        <div class="heading-left">
+            <h1 class="page-title">
+                {{project}}
+            </h1>
+            <div class="hide project_id">{{project.id}}</div>
+            <p class="page-subtitle">
+                {% if project.url %}
+                <a href="{{project.url}}" target="_blank">{{project.url}}</a> {% endif %}
+            </p>
+        </div>
+        <ul class="breadcrumb">
+            <li>
+                {% if project.ftp_credential %}
+                <span class="ftp label label-success">FTP</span>
+                <div id="ftp_id" class="hide">{{project.ftp_credential.id}}</div>
+                {% else %}
+                <span class="ftp label label-danger">FTP</span> {% endif %}
+            </li>
+            <li>
+                <span class="label label-info label-transparent">Sources: {{project.source_set.all.count}}</span>
+            </li>
+            <li>
+                <span class="label label-info label-transparent">Domains: {{project.domains_set.all.count}}</span>
+            </li>
+        </ul>
+    </div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-12 col-xs-12 col-md-12 col-lg-12">
+                <div class="panel">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">
+                            <span class="milestone-title">
+                                Records
+                            </span>
+                            <span class="group_note"> ({{domains|length}} items)</span>
+                            </a>
+                        </h4>
+                        <div class="right">
+                            <button type="button" class="btn btn-primary btn-outline" data-toggle="modal" data-target="#new-records-modal"><i class="fa fa-link"></i>Add new records</button>
+                            <button type="button" class="btn btn-primary btn-outline" data-toggle="modal" data-target="#mediator-modal"><i class="fa fa-layer-group"></i>Add source</button>
+                            <button type="button" id="mass_delete" class="btn btn-danger btn-outline" ><i class="fa fa-trash"></i>Delete selected</button>
+                            {% if user.is_superuser %}
+                            <div class="right">
+                                <div class="dropdown">
+                                    <a href="#" class="toggle-dropdown" data-toggle="dropdown"><i class="fa fa-ellipsis-v"></i></a>
+                                    <ul class="dropdown-menu dropdown-menu-right">
+                                        <li><a href="{{project.id}}/csv" target="_blank"><i class="fa fa-fw fa-file-code"></i>Get CSV</a></li>
+                                        <li><a href="#" data-toggle="modal" data-target="#small-modal"><i class="fa fa-fw fa-link"></i>Set project ads.txt url</a></li>
+                                        <li><a href="#" data-toggle="modal" data-target="#large-modal"><i class="fa fa-fw fa-server"></i>Set FTP</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div id="new-records-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
+                            <div class="modal-dialog modal-lg" role="document">
+                                <form method="POST">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                            <h4 class="modal-title" id="myModalLabel">Add new records</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            {% csrf_token %}
+                                            <div class="form-group">
+                                                {{form}}
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times-circle"></i> Close</button>
+                                            <button type="submit" class="btn btn-success"><i class="fa fa-check-circle"></i> Add records</button>
+                                        </div>
+                                </form>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="large-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
+                            <div class="modal-dialog modal-lg" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                        <h4 class="modal-title" id="myModalLabel">Set FTP credentials</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="input-group">
+                                            <span class="input-group-addon"><i class="fa fa-server"></i></span>
+                                            <input id="host" class="form-control" placeholder="Hostname or IP" type="text">
+                                        </div>
+                                        <br>
+                                        <div class="input-group">
+                                            <span class="input-group-addon"><i class="fa fa-user"></i></span>
+                                            <input id="username" class="form-control" placeholder="Username" type="text">
+                                        </div>
+                                        <br>
+                                        <div class="input-group">
+                                            <span class="input-group-addon"><i class="fa fa-key"></i></span>
+                                            <input id="password" class="form-control" placeholder="Password" type="text">
+                                        </div>
+                                        <br>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times-circle"></i> Close</button>
+                                        <button type="button" id="set_ftp" class="btn btn-primary"><i class="fa fa-check-circle"></i> Save changes</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="small-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
+                            <div class="modal-dialog modal-sm" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                        <h4 class="modal-title" id="myModalLabel2">Set ads.txt url</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <input id="project_url" type="text" class="form-control" placeholder="https://example.com/app-ads.txt ">
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times-circle"></i> Close</button>
+                                        <button type="button" class="btn btn-primary" id="set_url"><i class="fa fa-check-circle"></i> Save changes</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="mediator-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
+                            <div class="modal-dialog modal-sm" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                        <h4 class="modal-title">Add new source</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <input id="mediator_name" type="text" class="form-control" placeholder="e.g. Mobfox ">
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times-circle"></i> Close</button>
+                                        <button type="button" class="btn btn-success" id="create_mediator"><i class="fa fa-check-circle"></i> Create</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="table-responsive">
+                            <table id="domains" class="table table-hover project-list table-project-tasks">
+                                <thead>
+                                    <tr>
+                                        <th>Select</th>
+                                        <th>Domain</th>
+                                        <th>Publisher</th>
+                                        <th>Type</th>
+                                        <th>Certification</th>
+                                        <th>Source</th>
+                                        <th>Added by</th>
+                                        <th>Created</th>
+                                        <th>Delete</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extrajs %}
+
+<script src="{% static 'dashboard/vendor/jquery/jquery.min.js' %}"></script>
+<script src="{% static 'dashboard/vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'dashboard/vendor/datatables/js-main/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'dashboard/vendor/datatables/js-bootstrap/dataTables.bootstrap.min.js' %}"></script>
+<script src="{% static 'dashboard/vendor/datatables-colreorder/dataTables.colReorder.js' %}"></script>
+<script src="{% static 'dashboard/vendor/datatables-tabletools/js/dataTables.tableTools.js' %}"></script>
+
+<script src="{% static 'dashboard/vendor/x-editable/bootstrap3-editable/js/bootstrap-editable.min.js' %}"></script>
+<script src="{% static 'dashboard/vendor/x-editable/inputs-ext/typeaheadjs/lib/typeahead.js' %}"></script>
+<script src="{% static 'dashboard/vendor/x-editable/inputs-ext/typeaheadjs/typeaheadjs.js' %}"></script>
+<script src="{% static 'dashboard/vendor/x-editable/inputs-ext/address/address.js' %}"></script>
+
+<script src="{% static 'dashboard/scripts/klorofilpro-common.js' %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.11.2/moment.min.js"></script>
+<script src="https://cdn.datatables.net/plug-ins/1.10.12/sorting/datetime-moment.js"></script>
+<script src="https://cdn.datatables.net/plug-ins/1.10.11/sorting/date-eu.js"></script>
+{% endblock %}
+
+
+
+<script>
+    $.fn.dataTable.render.moment = function(from, to, locale) {
+        // Argument shifting
+        if (arguments.length === 1) {
+            locale = 'en';
+            to = from;
+            from = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS";
+        } else if (arguments.length === 2) {
+            locale = 'en';
+        }
+        return function(d, type, row) {
+            if (!d) {
+                return type === 'sort' || type === 'type' ? 0 : d;
+            }
+            var m = window.moment(d);
+            return m.format(type === 'sort' || type === 'type' ? 'x' : to);
+        };
+    };
+    var table_btn = '<span class="actions" >' + '<a href="#" class="delete_domain" ><i class="fa fa-trash"></i></a>' + '</span>'
+    var select_box = '<div class="fancy-checkbox custom-color-green"> <label> <input type="checkbox" > <span></span> </label> </div>'
+    var project_id = $('.project_id').text()
+    var table = $('#domains').DataTable({
+        "ajax": {
+            url: "/api/domains?format=datatables&project=" + project_id,
+
+        },
+
+        "drawCallback": function(settings) {
+            var domain_type = [{
+                value: "RESELLER",
+                text: "RESELLER"
+            }, {
+                value: "DIRECT",
+                text: "DIRECT"
+            }]
+            $.getJSON("/api/mediator?format=json&project=" + project_id, function(list) {
+                var mediator = [];
+                $.each(list["results"], function(key, value) {
+                    mediator.push({
+                        value: value["url"],
+                        text: value["name"]
+                    });
+                });
+                $('.domain').on('init', function(e, edt) {
+                    var data = table.row($(this).parents('tr')).data();
+                    edt.options.url = data['url'];
+                });
+                $('.domain').editable({
+                    mode: "inline",
+                    prepend: "",
+                    name: "domain",
+                    ajaxOptions: {
+                        contentType: 'application/json',
+                        type: 'PATCH',
+                        dataType: 'json',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        }
+                    },
+                    pk: "",
+                    params: function(params) {
+                        var obj = {
+                            "domain": params.value
+                        };
+                        return JSON.stringify(obj)
+                    },
+                    success: (response) => {
+                        table.ajax.reload(null, false);
+                    }
+                });
+                $('.publisher').on('init', function(e, edt) {
+                    var data = table.row($(this).parents('tr')).data();
+                    edt.options.url = data['url'];
+                });
+                $('.publisher').editable({
+                    mode: "inline",
+                    prepend: "",
+                    name: "publisher",
+                    ajaxOptions: {
+                        contentType: 'application/json',
+                        type: 'PATCH',
+                        dataType: 'json',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        }
+                    },
+                    pk: "",
+                    params: function(params) {
+                        var obj = {
+                            "publisher": params.value
+                        };
+                        return JSON.stringify(obj)
+                    },
+                    success: (response) => {
+                        table.ajax.reload(null, false);
+                    }
+                });
+                $('.type').on('init', function(e, edt) {
+                    var data = table.row($(this).parents('tr')).data();
+                    edt.options.url = data['url'];
+                });
+                $('.type').editable({
+                    mode: "inline",
+                    prepend: "",
+                    name: "type",
+                    source: domain_type,
+                    ajaxOptions: {
+                        contentType: 'application/json',
+                        type: 'PATCH',
+                        dataType: 'json',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        }
+                    },
+                    params: function(params) {
+                        var obj = {
+                            "type": params.value
+                        };
+                        return JSON.stringify(obj)
+                    },
+                    pk: "",
+                    success: (response) => {
+                        table.ajax.reload(null, false);
+                    }
+                });
+                $('.authority').on('init', function(e, edt) {
+                    var data = table.row($(this).parents('tr')).data();
+                    edt.options.url = data['url'];
+                });
+                $('.authority').editable({
+                    mode: "inline",
+                    prepend: "",
+                    name: "authority",
+                    ajaxOptions: {
+                        contentType: 'application/json',
+                        type: 'PATCH',
+                        dataType: 'json',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        }
+                    },
+                    pk: "",
+                    params: function(params) {
+                        var obj = {
+                            "authority": params.value
+                        };
+                        return JSON.stringify(obj)
+                    },
+                    success: (response) => {
+                        table.ajax.reload(null, false);
+                    }
+                });
+                $('.mediator_column').on('init', function(e, edt) {
+                    var data = table.row($(this).parents('tr')).data();
+                    edt.options.url = data['url'];
+                });
+                $('.mediator_column').editable({
+                    mode: "inline",
+                    prepend: "",
+                    name: "source",
+                    source: mediator,
+                    ajaxOptions: {
+                        contentType: 'application/json',
+                        type: 'PATCH',
+                        dataType: 'json',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        }
+                    },
+                    pk: "source",
+                    params: function(params) {
+                        var obj = {
+                            "source": params.value
+                        };
+                        console.log(params)
+                        return JSON.stringify(obj)
+                    },
+                    success: (response) => {
+                        table.ajax.reload(null, false);
+                    }
+                });
+            });
+        },
+        "iDisplayLength": 100,
+        "columns": [{
+            "data": null
+        },{
+            "data": "domain",
+            render: function(data) {
+                return `<a href="#" class="domain" data-type="text" data-title="domain">${data}</a>`
+            }
+        }, {
+            "data": "publisher",
+            render: function(data) {
+                return `<a href="#" class="publisher" data-type="text" data-title="publisher">${data}</a>`
+            }
+        }, {
+            "data": "type",
+            render: function(data) {
+                return `<a href="#" class="type" data-type="select" data-title="type">${data}</a>`
+            }
+        }, {
+            "data": "authority",
+            render: function(data) {
+                return `<a href="#" class="authority" data-type="text" data-title="authority">${data}</a>`
+            }
+        }, {
+            'data': 'source_name',
+            render: function(data) {
+                return `<a href="#" class="mediator_column" data-type="select" data-title="Source">${data}</a>`
+            }
+        }, {
+            "data": "user_rec"
+        }, {
+            "data": "added_at",
+            render: $.fn.dataTable.render.moment('YYYY-MM-DD HH:mm:ss')
+        }, {
+            "data": null
+        }, ],
+        "order": [
+            [5, "asc"]
+        ],
+        "columnDefs": [{
+            "targets": -1,
+            "data": null,
+            "orderable": false,
+            "defaultContent": table_btn
+        }, {
+            "targets": 0,
+            "orderable": false,
+            "data": null,
+            "defaultContent": select_box
+        }, ]
+    });
+    $('#providers tbody').on('click', '.edit', function() {
+        var data = table.row($(this).parents('tr')).data();
+    });
+    $('#set_url').on('click', function() {
+        project_id = $('.project_id').text()
+        patch = {
+            "url": $('#project_url').val()
+        }
+        $.ajax({
+            url: "/api/project/" + project_id,
+            method: "PATCH",
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            data: JSON.stringify(patch),
+            contentType: 'application/json',
+            statusCode: {
+                200: function() {
+                    location.reload();
+                },
+                400: function() {
+                    location.reload();
+                }
+            }
+        });
+    });
+    $('#create_mediator').on('click', function() {
+        project_id = $('.project_id').text()
+        project = "/api/project/" + project_id
+        data = {
+            "name": $('#mediator_name').val(),
+            "project": project
+        }
+        $.ajax({
+            url: "/api/mediator",
+            method: "POST",
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            statusCode: {
+                201: function() {
+                    location.reload();
+                },
+                202: function() {
+                    location.reload();
+                },
+                400: function() {
+                    location.reload();
+                }
+            }
+        });
+    });
+    $('#set_ftp').on('click', function() {
+        project_id = $('.project_id').text()
+        project = "/api/project/" + project_id
+        ftp_id = $('#ftp_id').text()
+        if ($('.ftp').hasClass("label-success")) {
+            method = "PATCH"
+            url = "/api/ftp/" + ftp_id
+        } else {
+            method = "POST"
+            url = "/api/ftp"
+        }
+        data = {
+            "host": $('#host').val(),
+            "user": $('#username').val(),
+            "password": $('#password').val(),
+            "project": project
+        }
+        $.ajax({
+            url: url,
+            method: method,
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            statusCode: {
+                201: function() {
+                    location.reload();
+                },
+                200: function() {
+                    location.reload();
+                },
+                400: function() {
+                    location.reload();
+                }
+            }
+        });
+    });
+    $('#domains tbody').on('click', '.delete_domain', function() {
+        var data = table.row($(this).parents('tr')).data();
+        console.log(data);
+        $.ajax({
+            url: data["url"],
+            method: "DELETE",
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            dataType: "json",
+            statusCode: {
+                204: function() {
+                    location.reload();
+                },
+                400: function() {
+                    location.reload();
+                }
+            }
+        });
+    });
+    $('#mass_delete').on('click', function() {
+        $('#domains').find('input[type="checkbox"]:checked').each(function () {
+            var data = table.row($(this).parents('tr')).data();
+            $.ajax({
+                    url: data["url"],
+                    method: "DELETE",
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    
+                    contentType: 'application/json',
+                    success: function (data) {
+                        $(".error_msg").text(data);
+                    }
+                });
+                location.reload();
+    });
+    })
+    
+</script>
+
+
+{% endblock content %}

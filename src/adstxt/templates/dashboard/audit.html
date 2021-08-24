@@ -1,0 +1,81 @@
+{% extends "base.html" %} {% load static %} {% block content %}
+
+<div class="main-content">
+    <div class="content-heading clearfix">
+        <div class="heading-left">
+            <h1 class="page-title">History</h1>
+
+        </div>
+
+    </div>
+    <div class="container-fluid">
+
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel">
+
+                    <div class="panel-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Action</th>
+                                        <th>Date</th>
+                                        <th>User</th>
+                                        <th>Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for log in history %}
+                                    <tr>
+                                        <td>
+                                            {% if log.action == 0 %}
+                                            <span class="label label-success">CREATED</span>
+                                            {% elif log.action == 1 %}
+                                            <span class="label label-warning">UPDATED</span>
+                                            {% elif log.action == 2 %}
+                                            <span class="label label-danger">DELETED</span>
+                                            {% endif %}
+
+                                        </td>
+                                        <td>{{log}}</td>
+                                        <td>{{log.timestamp}}</td>
+                                        <td>{{log.actor}}</td>
+                                        <td>
+                                            <table  class="table table-condensed table-bordered">
+                                                <th>Field</th>
+                                                <th>From</th>
+                                                <th>To</th>
+                                            {% for key, value in log.changes_dict.items %}
+                                            <tr>
+                                                <td>{{ key }}</td>
+                                                <td>{{ value.0|default:"None" }}</td>
+                                                <td>{{ value.1|default:"None" }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </table>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br>
+
+
+
+
+
+    </div>
+
+    <script src="{% static 'dashboard/vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'dashboard/vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'dashboard/scripts/klorofilpro-common.js' %}"></script>
+    {% endblock content %}

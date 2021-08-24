@@ -1,0 +1,14 @@
+Django==3.1.7
+psycopg2
+django-rest-framework
+django-filter
+django-widget-tweaks
+celery==4.2.0rc4
+django-celery-beat
+django-bootstrap3
+setuptools
+setuptools-rust
+djangorestframework-datatables
+django-extensions
+auditlog3
+jsonfield

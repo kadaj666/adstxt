@@ -1,0 +1,49 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en" class="fullscreen-bg">
+	<head>
+		<title>Register | Klorofil Pro - Bootstrap Admin Dashboard Template</title>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+		<!-- VENDOR CSS -->
+		<link rel="stylesheet" href="{% static 'dashboard/vendor/bootstrap/css/bootstrap.min.css' %}">
+		<link rel="stylesheet" href="{% static 'dashboard/vendor/font-awesome/css/font-awesome.min.css' %}">
+		<link rel="stylesheet" href="{% static 'dashboard/vendor/themify-icons/css/themify-icons.css' %}">
+		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
+		<link rel="stylesheet" href="{% static 'dashboard/vendor/toastr/toastr.min.css' %}">
+		<!-- MAIN CSS -->
+		<link rel="stylesheet" href="{% static 'dashboard/css/main.css' %}">
+		<!-- GOOGLE FONTS -->
+		<link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700" rel="stylesheet">
+		<!-- ICONS -->
+		<link rel="apple-touch-icon" sizes="76x76" href="{% static 'dashboard/img/apple-icon.png' %}">
+		<link rel="icon" type="image/png" sizes="96x96" href="{% static 'dashboard/img/favicon.png' %}">
+	</head>
+	<body>
+			
+			{% if messages %}
+			{% for message in messages %}
+				<span id="djng_message" data-context="{{ message.tags }}" data-message="{{ message }}" data-position="top-full-width"></span>
+			{% endfor %}
+			{% endif %}
+
+			{% for field in form %}
+			{% for error in field.errors %}
+				<span id="djng_message" data-context="error" data-message="{{ error|escape }}" data-position="top-full-width"></span>
+			{% endfor %}
+			{% endfor %}
+			{% for error in form.non_field_errors %}
+				<span id="djng_message" data-context="error" data-message="{{ error|escape }}" data-position="top-full-width"></span>
+			{% endfor %}
+			
+			<script src="{% static 'dashboard/vendor/jquery/jquery.min.js' %}"></script>
+			<script src="{% static 'dashboard/vendor/pwstrength-bootstrap/pwstrength-bootstrap.min.js' %}"></script>
+			<script src="{% static 'dashboard/scripts/klorofilpro-common.js' %}"></script>
+			<script src="{% static 'dashboard/vendor/toastr/toastr.min.js' %}"></script>
+		{% block content %}{% endblock %}
+		
+	</body>
+	
+</html>

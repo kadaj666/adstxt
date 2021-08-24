@@ -1,0 +1,187 @@
+{% extends "base.html" %} {% load static %} {% block content %}
+
+<div class="main-content">
+    <div class="content-heading clearfix">
+        <div class="heading-left">
+            <h1 class="page-title">Projects </h1>
+        </div>
+
+    </div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="input-group">
+                    <input id="project_name" class="form-control" type="text" placeholder="Please enter project name">
+                    <span class="input-group-btn">
+                                <button class="btn btn-primary" type="button" id="add_project">New project!</button>
+                            </span>
+                </div>
+                <div class="error_msg"></div>
+                <br> {% if not projects %}
+                <div class="alert alert-info alert-dismissible" role="alert">
+                    <i class="fa fa-info-circle"></i> You don't have projects yet. Please add one above.
+                </div>
+                {% else %}
+                <div class="panel">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">Current projects</h4>
+
+                        <div class="right">
+                            <button type="button" class="btn btn-primary btn-outline" data-toggle="modal" data-target="#mediator-modal"><i class="fa fa-layer-group"></i>Add mass source</button>
+                        </div>
+                    </div>
+                    <div id="mediator-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
+                        <div class="modal-dialog modal-sm" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                    <h4 class="modal-title">Add new source</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <input id="mass_mediator_name" type="text" class="form-control" placeholder="e.g. Mobfox ">
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times-circle"></i> Close</button>
+                                    <button type="button" class="btn btn-success" id="create_mass_mediator"><i class="fa fa-check-circle"></i> Create</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-body no-padding">
+                        <div class="table-responsive">
+                            <table class="table table-minimal table-striped table-fullwidth table-icons-stat">
+                                <thead>
+                                    <tr>
+                                        <th class="hide"></th>
+                                        <th>Project Name</th>
+                                        <th>Sources</th>
+                                        <th>Domains</th>
+                                        <th>Created</th>
+                                        <th>FTP</th>
+                                        {% if user.is_superuser %}
+                                        <th>Delete</th>
+                                        {% endif %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for project in projects %}
+                                    <tr>
+                                        <td class="hide">{{project.id}}</td>
+                                        <td><a href="details/{{project.id}}">{{project}}</a></td>
+                                        <td><i class="fa fa-layer-group"></i> {{project.source_set.all.count }}</td>
+                                        <td><i class="fa fa-link"></i> {{project.domains_set.all.count }}</td>
+                                        <td><i class="fa fa-calendar-alt"></i> {{project.created}}</td>
+                                        <td>
+                                            {% if project.ftp_credential %}
+                                            <span class="ftp label label-success">ACTIVE</span> {% else %}
+                                            <span class="ftp label label-danger">DISABLED</span> {% endif %}
+                                        </td>
+                                        {% if user.is_superuser %}
+                                        <td><a href="#" id="delete_project"><i class="fa fa-trash"></i></a></td>
+                                        {% endif %}
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extrajs %}
+
+<script src="{% static 'dashboard/vendor/jquery/jquery.min.js' %}"></script>
+<script src="{% static 'dashboard/vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'dashboard/vendor/datatables/js-main/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'dashboard/vendor/datatables/js-bootstrap/dataTables.bootstrap.min.js' %}"></script>
+<script src="{% static 'dashboard/vendor/datatables-colreorder/dataTables.colReorder.js' %}"></script>
+<script src="{% static 'dashboard/vendor/datatables-tabletools/js/dataTables.tableTools.js' %}"></script>
+
+<script src="{% static 'dashboard/vendor/x-editable/bootstrap3-editable/js/bootstrap-editable.min.js' %}"></script>
+<script src="{% static 'dashboard/vendor/x-editable/inputs-ext/typeaheadjs/lib/typeahead.js' %}"></script>
+<script src="{% static 'dashboard/vendor/x-editable/inputs-ext/typeaheadjs/typeaheadjs.js' %}"></script>
+<script src="{% static 'dashboard/vendor/x-editable/inputs-ext/address/address.js' %}"></script>
+
+<script src="{% static 'dashboard/scripts/klorofilpro-common.js' %}"></script>
+
+{% endblock %}
+
+
+
+
+<script>
+    $('#create_mass_mediator').on('click', function() {
+        $('.table').find("tr").each(function() {
+            $(this).find('td:eq(0)').each(function(index, element) {
+                var project_id = $(element).text();
+                project = "/api/project/" + project_id
+                data = {
+                    "name": $('#mass_mediator_name').val(),
+                    "project": project
+                }
+                $.ajax({
+                    url: "/api/mediator",
+                    method: "POST",
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    data: JSON.stringify(data),
+                    contentType: 'application/json',
+                    success: function (data) {
+                        $(".error_msg").text(data);
+                    }
+                });
+            });
+        });
+        location.reload();
+    });
+
+    $('#add_project').on('click', function() {
+        $.ajax({
+            url: "/api/project",
+            method: "POST",
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            data: {
+                "name": $('#project_name').val()
+            },
+            dataType: "json",
+            statusCode: {
+                201: function() {
+                    location.reload();
+                },
+                400: function() {
+                    location.reload();
+                }
+            }
+        });
+    });
+
+    $('.fa-trash').on('click', function() {
+        project_id = $(this).parents('tr').find('td:eq(0)').text();
+        $.ajax({
+            url: "/api/project/" + project_id,
+            method: "DELETE",
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            dataType: "json",
+            statusCode: {
+                204: function() {
+                    location.reload();
+                },
+                400: function() {
+                    location.reload();
+                }
+            }
+        });
+    });
+</script>
+
+
+{% endblock content %}
