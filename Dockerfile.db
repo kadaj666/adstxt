@@ -1,3 +1,3 @@
 FROM postgres
 
-ADD ./webg.sql /docker-entrypoint-initdb.d
+ADD ./adstxt.sql /docker-entrypoint-initdb.d

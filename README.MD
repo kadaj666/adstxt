@@ -1,4 +1,4 @@
-Play market web parser
+ADS.TXT Web editor 
 ======
 This is a editor and ftp uploader for **AdsTXT** records
 
